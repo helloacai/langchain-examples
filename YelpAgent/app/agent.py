@@ -10,6 +10,7 @@ from langgraph.graph import StateGraph, MessagesState, START, END
 import requests
 
 from datetime import datetime
+import json
 
 import os
 
@@ -22,24 +23,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-print("hi")
-
 @tool
-def reserve_restaurant(restaurant: int, time: datetime):
-    """Call the specific agent with a request""" # Right now just spoofing this. Once Agent wallet is created this will be a contract call via CDP
-    print(restaurant)
-    if restaurant == 1:
-        return "You did it!"
-    elif restaurant == 2:
-        return "Wrongo!"
-    else:
-        return "no idea what you did"
+def reserve_restaurant(restaurant: dict, time: datetime):
+    """reserve the restaurant for the given time""" # right now just spoofing this. yelp locks down the booking api unfortunately
+    return "reserved!"
 
 
 @tool
-def get_all_restaurants():
-    """Gets a list of all potential restaurants to reserve"""
-    return "{name: Amber, cuisine: Indian shortDescription: yummy, id: 1}, {name: UselessRestaurant, cuisine: Chinese, shortDescription: chinese food, id: 2}"
+def get_all_restaurants(location: str):
+    """Gets a list of all potential restaurants to reserve in a specific location"""
+    with open('./app/restaurants.json', 'r') as file: # TODO: real api request. cheat and read from flat file from now
+        data = file.read()
+    return json.loads(data)['businesses']
 
 tools = [reserve_restaurant, get_all_restaurants]
 tool_node = ToolNode(tools)
@@ -75,8 +70,8 @@ graph = workflow.compile()
 
 for chunk in graph.stream(
     {"messages": [
-        ("system", "You are a restaurant reservation agent. When evaluating a user's request you will first get a list of all the restaurants you can reserve and their capabilities. This list will show the restaurant name, cuisine, short description, and their unique identifier. Based on their cuisine and short description you will decide on a restaurant to reserve using your reserve_restaurant tool. When calling this tool you will provide the Agent's corresponding identifier and the datetime for the reservation."),
-        ("human", "I want to make a reservation for an indian restaurant at 7pm tomorrow PST")
+        ("system", "You are a restaurant reservation agent. When evaluating a user's request you will first get a list of all the restaurants you can reserve and their details. This list will show the restaurant id, name, categories, and description among other details. Based on their categories, description, and other details you will decide on a restaurant to reserve using your reserve_restaurant tool. When calling this tool you will provide the restaurant dict and the datetime for the reservation."),
+        ("human", "I want to make a reservation for a good indian restaurant in San Francisco at 7pm tomorrow PST")
     ]},
     stream_mode="values",
 ):
