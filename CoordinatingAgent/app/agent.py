@@ -14,10 +14,8 @@ import os
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
 
-from cdp import *
+from cdpHandler import getWallet 
 
-from web3 import Web3
-w3 = Web3(Web3.HTTPProvider("https://polygon-amoy.g.alchemy.com/v2/FTsX20HJ4-N1XQicbeYKIjQSjHczteMp", request_kwargs={'timeout': 60}))
 
 # Select your transport with a defined url endpoint
 transport = AIOHTTPTransport(url="https://api.studio.thegraph.com/query/63407/aciregistry-polygon-amoy/version/latest")
@@ -48,9 +46,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-Cdp.configure(os.environ['CDP_API_KEY'], os.environ['CDP_SECRET_KEY'])
+wallet = getWallet()
 
-wallet = Wallet.create(network_id="polygon-mainnet")
+print(wallet.default_address)
 
 @tool
 def call_agent(agent: int, request: str):
@@ -109,13 +107,13 @@ workflow.add_edge(START, "agent")
 workflow.add_conditional_edges("agent", should_continue, ["tools", END])
 workflow.add_edge("tools", "agent")
 
-app = workflow.compile()
+graph = workflow.compile()
 
-for chunk in app.stream(
-    {"messages": [
-        ("system", "You are a coordinating agent. When evaluating a user's request you will first get a list of all the agents you can call on and their capabilities. This list will show the agent name, short description, and their unique identifier. Based on their short description you will decide on 1-3 helper agents to call on using your call_agent tool. When calling this tool you will provide the Agent's corresponding identifier and the request that you would like the agent to complete."),
-        ("human", "What is the tallest building in the united states?")
-    ]},
-    stream_mode="values",
-):
-    chunk["messages"][-1].pretty_print()
+# for chunk in graph.stream(
+#     {"messages": [
+#         ("system", "You are a coordinating agent. When evaluating a user's request you will first get a list of all the agents you can call on and their capabilities. This list will show the agent name, short description, and their unique identifier. Based on their short description you will decide on 1-3 helper agents to call on using your call_agent tool. When calling this tool you will provide the Agent's corresponding identifier and the request that you would like the agent to complete."),
+#         ("human", "What is the tallest building in the united states?")
+#     ]},
+#     stream_mode="values",
+# ):
+#     chunk["messages"][-1].pretty_print()
