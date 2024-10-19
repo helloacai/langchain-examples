@@ -3,6 +3,8 @@ import logging
 
 from fastapi import FastAPI
 from agent import graph
+from pydantic import BaseModel
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -18,7 +20,7 @@ async def read_root():
     return {"Hello": "World"}
 
 @app.post("/human")
-async def read_human(request: Request):
+async def create_human(request: Request):
     inputs = {"messages": [("human", request.requestRef)]}
     async for chunk in graph.astream(inputs, stream_mode="values"):
         final_result = chunk
