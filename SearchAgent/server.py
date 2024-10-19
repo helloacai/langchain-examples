@@ -10,8 +10,12 @@ logging.basicConfig(level=logging.DEBUG)
 app = FastAPI()
 
 
+@app.get("/")
+async def read_root():
+    return {"Hello": "World"}
+
 @app.get("/human/{requestRef}")
-async def read_root(requestRef: Union[str, None] = None):
+async def read_human(requestRef: str):
     inputs = {"messages": [("human", requestRef)]}
     async for chunk in graph.astream(inputs, stream_mode="values"):
         final_result = chunk
