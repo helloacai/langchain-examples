@@ -21,7 +21,7 @@ from cdpHandler import getWallet
 
 
 # Select your transport with a defined url endpoint
-transport = AIOHTTPTransport(url="https://api.studio.thegraph.com/query/63407/aciregistry-polygon-amoy/version/latest")
+transport = AIOHTTPTransport(url="https://api.studio.thegraph.com/query/63407/aci-registry-polygon/version/latest")
 
 # Create a GraphQL client using the defined transport
 client = Client(transport=transport, fetch_schema_from_transport=True)
@@ -53,17 +53,202 @@ wallet = getWallet()
 
 print(wallet.default_address)
 
+abi = [
+    {
+      "inputs": [
+        {
+          "internalType": "contract IACIRegistry",
+          "name": "registry",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidRegistry",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnknownThreadUID",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "aciUID",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "parentThreadUID",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "threadUID",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "requester",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "requestRef",
+          "type": "string"
+        }
+      ],
+      "name": "Requested",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "threadUID",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "fundingAmount",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "funder",
+          "type": "address"
+        }
+      ],
+      "name": "ThreadFunded",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "threadUID",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getThread",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "threadUID",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "parentThreadUID",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "agentUID",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "requester",
+              "type": "address"
+            },
+            {
+              "internalType": "uint32",
+              "name": "totalBudget",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "remainingBudget",
+              "type": "uint32"
+            },
+            {
+              "internalType": "enum Status",
+              "name": "status",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct Thread",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "parentThreadUID",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "threadUID",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "aciUID",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "string",
+          "name": "requestRef",
+          "type": "string"
+        }
+      ],
+      "name": "request",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+]
+
 @tool
-def call_agent(agent: int, request: str, state: Annotated[dict, InjectedState]):
+def call_agent(agent: str, request: str, state: Annotated[dict, InjectedState]):
     """Call the specific agent with a request""" # Right now just spoofing this. Once Agent wallet is created this will be a contract call via CDP
     print(agent, request, state)
-    if agent == 1:
-        return "You did it!"
-    elif agent == 2:
-        return "Wrongo!"
-    else:
-        return "no idea what you did"
 
+    #TODO: GET parentThreadUID from messages
+
+    invocation = wallet.invoke_contract(
+        contract_address="0x5AFc57F7F6D6Dd560A87Ab073ebd09C8e4f4544a",
+        abi=abi,
+        method="request",
+        args={"parentThreadUID": "", "threadUID": "", "aciUID": agent, "requestRef": request}
+    )
+
+    invocation.wait()
+
+    #TODO: GET threadUID from invocation transaction receipt (first log, topic 3)
+
+    return
+    
 
 @tool
 def get_all_agents():
@@ -77,8 +262,7 @@ def get_all_agents():
             'description': registration['metadata']['description'],
             'uid': registration['aci_uid']
         })
-    print(output) # Right now just printing the output because there is only one agent registered -- we should be returning output
-    return "{name: SearchAgent, shortDescription: A search agent capable of searching the web for relevant information, id: 1}, {name: UselessAgent, shortDescription: A useless agent that should never be called, id: 2}"
+    return output
 
 tools = [call_agent, get_all_agents]
 tool_node = ToolNode(tools)
