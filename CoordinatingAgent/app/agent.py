@@ -241,7 +241,7 @@ def call_agent(agent: str, request: str, thread_id: str):
         contract_address="0x5AFc57F7F6D6Dd560A87Ab073ebd09C8e4f4544a",
         abi=abi,
         method="request",
-        args={"parentThreadUID": thread_id, "threadUID": "", "aciUID": agent, "requestRef": request}
+        args={"parentThreadUID": thread_id, "threadUID": "0x0000000000000000000000000000000000000000000000000000000000000000", "aciUID": agent, "requestRef": request}
     )
 
     invocation.wait()

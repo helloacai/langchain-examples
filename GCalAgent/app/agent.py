@@ -271,7 +271,7 @@ def inform_parent(parent_thread_uid: str, event_details: str):
         contract_address="0x5AFc57F7F6D6Dd560A87Ab073ebd09C8e4f4544a",
         abi=abi,
         method="request",
-        args={"parentThreadUID": "", "threadUID": parent_thread_uid, "aciUID": "0x822434c25a9837f0e7244090c1558663dee097f16f7623f0bf461c8afee4c55b", "requestRef": event_details}
+        args={"parentThreadUID": "0x0000000000000000000000000000000000000000000000000000000000000000", "threadUID": parent_thread_uid, "aciUID": "0x822434c25a9837f0e7244090c1558663dee097f16f7623f0bf461c8afee4c55b", "requestRef": event_details}
     )
 
     invocation.wait()
