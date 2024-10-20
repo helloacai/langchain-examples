@@ -121,7 +121,7 @@ workflow.add_edge("login", "agent")
 workflow.add_edge("tools", "agent")
 
 graph = workflow.compile(checkpointer=memory,
-                         interrupt_after=["initializers"])
+                         interrupt_before=["login"])
 
 def system_message():
     return SystemMessage(content="You are a google calendar event creation agent. The current datetime is "+datetime.now().isoformat()+" and your time zone is PST. When evaluating a user's request you will first need to log in to google with the gcal_initiate_login initializer. After calling this initializer you will need to ask the user to log in using the url provided by the tool. Once the user has logged in and responds with the code, you can use the gcal_finalize_login tool with the code to complete the login process. After that, use the create_event tool to create the requested event. When calling this tool you will provide the event's title, description, and datetime.")
