@@ -229,11 +229,17 @@ def gcal_initiate_login():
     return "please tell me the code you get after logging in to google: "+auth_url
 
 @tool
-def gcal_finalize_login(auth_code: str):
+def gcal_finalize_login(code="", auth_code=""):
     """finalize oath login to google calendar"""
 
     # fetch the token using the code
-    flow.fetch_token(code=auth_code)
+    if len(auth_code) > 0:
+        flow.fetch_token(code=auth_code)
+    elif len(code) > 0:
+        flow.fetch_token(code=code)
+    else:
+        raise ValueError("no authorization code specified")
+
     return "logged in"
 
 @tool
