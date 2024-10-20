@@ -25,11 +25,11 @@ async def read_root():
 async def post_thread(request: Request):
     config = RunnableConfig(configurable= {"thread_id": request.threadUID})
     inputs = {"messages": [system_message(), HumanMessage(content=request.requestRef)]}
-    final_result = {"messages":["none"]}
+    messages = []
     async for chunk in graph.astream(inputs, config=config, stream_mode="values"):
-        final_result = chunk
-        logger.info(final_result)
-    return final_result["messages"][-1]
+        messages += chunk
+        logger.info(chunk)
+    return messages
 
 @app.patch("/thread")
 async def patch_thread(request: Request):
@@ -39,8 +39,8 @@ async def patch_thread(request: Request):
             config=config,
             values=inputs,
             )
-    final_result = {"messages":["none"]}
+    messages = []
     async for chunk in graph.astream(None, config=config, stream_mode="values"):
-        final_result = chunk
-        logger.info(final_result)
-    return final_result["messages"][-1]
+        messages += chunk
+        logger.info(chunk)
+    return messages
