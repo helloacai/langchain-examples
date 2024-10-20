@@ -27,7 +27,7 @@ async def post_thread(request: Request):
     inputs = {"messages": [system_message(), HumanMessage(content=request.requestRef)]}
     messages = []
     async for chunk in graph.astream(inputs, config=config, stream_mode="values"):
-        messages += chunk
+        messages.append(chunk)
         logger.info(chunk)
     return messages
 
@@ -41,6 +41,6 @@ async def patch_thread(request: Request):
             )
     messages = []
     async for chunk in graph.astream(None, config=config, stream_mode="values"):
-        messages += chunk
+        messages.append(chunk)
         logger.info(chunk)
     return messages
