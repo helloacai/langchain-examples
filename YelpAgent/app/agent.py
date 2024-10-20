@@ -12,6 +12,8 @@ import requests
 from datetime import datetime
 import json
 
+from cdpHandler import getWallet
+
 import os
 
 from web3 import Web3
@@ -22,6 +24,11 @@ w3 = Web3(Web3.HTTPProvider("https://polygon-amoy.g.alchemy.com/v2/FTsX20HJ4-N1X
 from dotenv import load_dotenv
 
 load_dotenv()
+
+wallet = getWallet()
+
+print(wallet.default_address)
+
 
 @tool
 def reserve_restaurant(restaurant: dict, time: datetime):

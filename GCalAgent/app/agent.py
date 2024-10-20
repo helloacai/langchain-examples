@@ -14,6 +14,8 @@ from datetime import datetime, timedelta
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 
+from cdpHandler import getWallet
+
 memory = MemorySaver()
 
 
@@ -32,6 +34,10 @@ w3 = Web3(Web3.HTTPProvider("https://polygon-amoy.g.alchemy.com/v2/FTsX20HJ4-N1X
 from dotenv import load_dotenv
 
 load_dotenv()
+
+wallet = getWallet()
+
+print(wallet.default_address)
 
 flow = Flow.from_client_secrets_file(
     './secrets/gcal_client_secrets.json',
