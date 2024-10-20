@@ -1,5 +1,5 @@
 import logging
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import AIMessage, ToolMessage, HumanMessage
 
 from fastapi import FastAPI
 from agent import graph
@@ -40,10 +40,12 @@ async def post_thread(request: Request):
                         message["message"] = content["text"]
             if chunk_message.response_metadata and chunk_message.response_metadata["stop_reason"] == "end_turn":
                 message["status"] = "complete"
+            elif isinstance(chunk_message, ToolMessage):
+                message["status"] = "debug"
             else:
                 message["status"] = "info"
             messages.append(message)
-    if messages[-1]["status"] == "info":
+    if messages[-1]["status"] == "info" or messages[-1]["status"] == "debug":
         messages[-1]["status"] = "waiting"
     return { "messages": messages }
 
@@ -70,9 +72,11 @@ async def patch_thread(request: Request):
                         message["message"] = content["text"]
             if chunk_message.response_metadata and chunk_message.response_metadata["stop_reason"] == "end_turn":
                 message["status"] = "complete"
+            elif isinstance(chunk_message, ToolMessage):
+                message["status"] = "debug"
             else:
                 message["status"] = "info"
             messages.append(message)
-    if messages[-1]["status"] == "info":
+    if messages[-1]["status"] == "info" or messages[-1]["status"] == "debug":
         messages[-1]["status"] = "waiting"
     return { "messages": messages }
