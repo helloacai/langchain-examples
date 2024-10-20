@@ -17,7 +17,7 @@ from datetime import datetime
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
 
-from cdpHandler import getWallet 
+from cdpHandler import getWallet
 
 
 # Select your transport with a defined url endpoint

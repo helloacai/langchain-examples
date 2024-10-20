@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 from cdp import *
 import os
 import json
-import redis
 
 
 load_dotenv()
