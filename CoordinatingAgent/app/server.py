@@ -45,7 +45,7 @@ async def post_thread(request: Request):
             messages.append(message)
     if messages[-1]["status"] == "info":
         messages[-1]["status"] = "waiting"
-    return messages
+    return { "messages": messages }
 
 @app.patch("/thread")
 async def patch_thread(request: Request):
@@ -75,5 +75,4 @@ async def patch_thread(request: Request):
             messages.append(message)
     if messages[-1]["status"] == "info":
         messages[-1]["status"] = "waiting"
-    return messages
-
+    return { "messages": messages }
