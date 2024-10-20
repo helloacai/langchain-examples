@@ -5,7 +5,7 @@
     "get_all_restaurants: list restaurants from yelp",
     "reserve_restaurant: make a restaurant reservation"
   ],
-  "baseUrl": "https://coordinatingagent.onrender.com",
+  "baseUrl": "https://yelpagent.onrender.com",
   "postRoute": {
     "uri": "/thread",
     "method": "POST",
