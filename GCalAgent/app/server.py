@@ -24,7 +24,7 @@ async def read_root():
 @app.post("/thread")
 async def post_thread(request: Request):
     config = RunnableConfig(configurable= {"thread_id": request.threadUID})
-    inputs = {"messages": [system_message(), HumanMessage(content=request.requestRef)]}
+    inputs = {"messages": [system_message(request.parentThreadUID), HumanMessage(content=request.requestRef)]}
     messages = []
     async for chunk in graph.astream(inputs, config=config, stream_mode="values"):
         chunk_message = chunk["messages"][-1]

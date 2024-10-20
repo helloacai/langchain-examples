@@ -37,6 +37,182 @@ load_dotenv()
 
 wallet = getWallet()
 
+abi = [
+    {
+      "inputs": [
+        {
+          "internalType": "contract IACIRegistry",
+          "name": "registry",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidRegistry",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnknownThreadUID",
+      "type": "error"
+    },
+    {
+      "anonymous": False,
+      "inputs": [
+        {
+          "indexed": True,
+          "internalType": "bytes32",
+          "name": "aciUID",
+          "type": "bytes32"
+        },
+        {
+          "indexed": True,
+          "internalType": "bytes32",
+          "name": "parentThreadUID",
+          "type": "bytes32"
+        },
+        {
+          "indexed": True,
+          "internalType": "bytes32",
+          "name": "threadUID",
+          "type": "bytes32"
+        },
+        {
+          "indexed": False,
+          "internalType": "address",
+          "name": "requester",
+          "type": "address"
+        },
+        {
+          "indexed": False,
+          "internalType": "string",
+          "name": "requestRef",
+          "type": "string"
+        }
+      ],
+      "name": "Requested",
+      "type": "event"
+    },
+    {
+      "anonymous": False,
+      "inputs": [
+        {
+          "indexed": True,
+          "internalType": "bytes32",
+          "name": "threadUID",
+          "type": "bytes32"
+        },
+        {
+          "indexed": False,
+          "internalType": "uint32",
+          "name": "fundingAmount",
+          "type": "uint32"
+        },
+        {
+          "indexed": False,
+          "internalType": "address",
+          "name": "funder",
+          "type": "address"
+        }
+      ],
+      "name": "ThreadFunded",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "threadUID",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getThread",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "threadUID",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "parentThreadUID",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "agentUID",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "address",
+              "name": "requester",
+              "type": "address"
+            },
+            {
+              "internalType": "uint32",
+              "name": "totalBudget",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "remainingBudget",
+              "type": "uint32"
+            },
+            {
+              "internalType": "enum Status",
+              "name": "status",
+              "type": "uint8"
+            }
+          ],
+          "internalType": "struct Thread",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "parentThreadUID",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "threadUID",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "aciUID",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "string",
+          "name": "requestRef",
+          "type": "string"
+        }
+      ],
+      "name": "request",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+]
+
 print(wallet.default_address)
 
 flow = Flow.from_client_secrets_file(
@@ -83,11 +259,32 @@ def create_event(title: str, description: str, time: datetime):
     return "event created"
 
 
+@tool
+def inform_parent(parent_thread_uid: str, event_details: str):
+    """inform the parent thread that we're complete"""
+
+    if parent_thread_uid.startswith('0x00000'):
+        return "no parent to inform"
+
+    print("INFORM_PARENT: "+parent_thread_uid)
+    invocation = wallet.invoke_contract(
+        contract_address="0x5AFc57F7F6D6Dd560A87Ab073ebd09C8e4f4544a",
+        abi=abi,
+        method="request",
+        args={"parentThreadUID": "", "threadUID": parent_thread_uid, "aciUID": "0x822434c25a9837f0e7244090c1558663dee097f16f7623f0bf461c8afee4c55b", "requestRef": event_details}
+    )
+
+    invocation.wait()
+
+    return "parent informed"
+
+
+
 initialize = [gcal_initiate_login]
 initialize_node = ToolNode(initialize)
 login = [gcal_finalize_login]
 login_node = ToolNode(login)
-tools = [create_event]
+tools = [create_event, inform_parent]
 tool_node = ToolNode(tools)
 
 model_with_tools = ChatAnthropic(
@@ -129,8 +326,8 @@ workflow.add_edge("tools", "agent")
 graph = workflow.compile(checkpointer=memory,
                          interrupt_after=["initializers"])
 
-def system_message():
-    return SystemMessage(content="You are a google calendar event creation agent. The current datetime is "+datetime.now().isoformat()+" and your time zone is PST. When evaluating a user's request you will first need to log in to google with the gcal_initiate_login initializer. After calling this initializer you will need to ask the user to log in using the url provided by the tool. Once the user has logged in and responds with the code, you can use the gcal_finalize_login tool with the code to complete the login process. After that, use the create_event tool to create the requested event. When calling this tool you will provide the event's title, description, and datetime.")
+def system_message(parentThreadUID):
+    return SystemMessage(content="You are a google calendar event creation agent. The current datetime is "+datetime.now().isoformat()+" and your time zone is PST. When evaluating a user's request you will first need to log in to google with the gcal_initiate_login initializer. After calling this initializer you will need to ask the user to log in using the url provided by the tool. Once the user has logged in and responds with the code, you can use the gcal_finalize_login tool with the code to complete the login process. After that, use the create_event tool to create the requested event. When calling this tool you will provide the event's title, description, and datetime. After you create the event please use the inform_parent tool and pass your parent_thread_uid and the details of the event you created. Your parent_thread_uid is "+parentThreadUID+".")
 
 if __name__ == '__main__':
     config = RunnableConfig(configurable= {"thread_id": "1"})
