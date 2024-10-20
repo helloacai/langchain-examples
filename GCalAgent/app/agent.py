@@ -123,39 +123,40 @@ workflow.add_edge("tools", "agent")
 graph = workflow.compile(checkpointer=memory,
                          interrupt_after=["initializers"])
 
-config = RunnableConfig(configurable= {"thread_id": "1"})
-tool_call_id = "UNKNOWN"
-for chunk in graph.stream(
-    {"messages": [
-        ("system", "You are a google calendar event creation agent. The current datetime is "+datetime.now().isoformat()+". When evaluating a user's request you will first need to log in to google with the gcal_initiate_login initializer. After calling this initializer you will need to ask the user to log in using the url provided by the tool. Once the user has logged in and responds with the code, you can use the gcal_finalize_login tool with the code to complete the login process. After that, use the create_event tool to create the requested event. When calling this tool you will provide the event's title, description, and datetime."),
-        ("human", "Please create an event for my Amber Restarant dinner reservation at 7pm tomorrow PST")
-    ]},
-    config=config,
-    stream_mode="values",
-):
-    msg = chunk["messages"][-1]
-    msg.pretty_print()
-    if hasattr(msg, "tool_calls") and len(msg.tool_calls) > 0:
-        tool_call_id = msg.tool_calls[0]["id"]
-
-snapshot = graph.get_state(config)
-existing_message = snapshot.values["messages"][-1]
-
-code = input('Enter the authorization code: ')
-
-code_message = "the code is " + code
-new_messages = [
-    # The LLM API expects some ToolMessage to match its tool call. We'll satisfy that here.
-    #ToolMessage(content=code_message, tool_call_id=tool_call_id),
-    HumanMessage(content=code_message),
-]
-
-graph.update_state(
+if __name__ == '__main__':
+    config = RunnableConfig(configurable= {"thread_id": "1"})
+    tool_call_id = "UNKNOWN"
+    for chunk in graph.stream(
+        {"messages": [
+            ("system", "You are a google calendar event creation agent. The current datetime is "+datetime.now().isoformat()+". When evaluating a user's request you will first need to log in to google with the gcal_initiate_login initializer. After calling this initializer you will need to ask the user to log in using the url provided by the tool. Once the user has logged in and responds with the code, you can use the gcal_finalize_login tool with the code to complete the login process. After that, use the create_event tool to create the requested event. When calling this tool you will provide the event's title, description, and datetime."),
+            ("human", "Please create an event for my Amber Restarant dinner reservation at 7pm tomorrow PST")
+        ]},
         config=config,
-        values={"messages": new_messages},
-        )
+        stream_mode="values",
+    ):
+        msg = chunk["messages"][-1]
+        msg.pretty_print()
+        if hasattr(msg, "tool_calls") and len(msg.tool_calls) > 0:
+            tool_call_id = msg.tool_calls[0]["id"]
 
-events = graph.stream(None, config=config, stream_mode="values")
-for event in events:
-    if "messages" in event:
-        event["messages"][-1].pretty_print()
+    snapshot = graph.get_state(config)
+    existing_message = snapshot.values["messages"][-1]
+
+    code = input('Enter the authorization code: ')
+
+    code_message = "the code is " + code
+    new_messages = [
+        # The LLM API expects some ToolMessage to match its tool call. We'll satisfy that here.
+        #ToolMessage(content=code_message, tool_call_id=tool_call_id),
+        HumanMessage(content=code_message),
+    ]
+
+    graph.update_state(
+            config=config,
+            values={"messages": new_messages},
+            )
+
+    events = graph.stream(None, config=config, stream_mode="values")
+    for event in events:
+        if "messages" in event:
+            event["messages"][-1].pretty_print()
