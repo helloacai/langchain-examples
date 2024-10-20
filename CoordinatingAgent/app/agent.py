@@ -1,4 +1,5 @@
-from langchain_core.messages import AIMessage
+from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.runnables.config import RunnableConfig
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
 from typing import Literal
@@ -10,9 +11,8 @@ from langgraph.graph import StateGraph, MessagesState
 from langgraph.prebuilt import ToolNode
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.prebuilt import InjectedState
-import requests
 
-import os
+from datetime import datetime
 
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
@@ -112,11 +112,17 @@ workflow.add_edge("tools", "agent")
 
 graph = workflow.compile()
 
-for chunk in graph.stream(
-    {"messages": [
-        ("system", "You are a coordinating agent. When evaluating a user's request you will first get a list of all the agents you can call on and their capabilities. This list will show the agent name, short description, and their unique identifier. Based on their short description you will decide on 1-3 helper agents to call on using your call_agent tool. When calling this tool you will provide the Agent's corresponding identifier and the request that you would like the agent to complete."),
-        ("human", "What is the tallest building in the united states?")
-    ]},
-    stream_mode="values",
-):
-    chunk["messages"][-1].pretty_print()
+def system_message():
+    return SystemMessage(content="You are a coordinating agent. The current datetime is "+datetime.now().isoformat()+" and your time zone is PST. When evaluating a user's request you will first get a list of all the agents you can call on and their capabilities. This list will show the agent name, short description, and their unique identifier. Based on their short description you will decide on 1-3 helper agents to call on using your call_agent tool. When calling this tool you will provide the Agent's corresponding identifier and the request that you would like the agent to complete.")
+
+if __name__ == '__main__':
+    config = RunnableConfig(configurable= {"thread_id": "1"})
+    for chunk in graph.stream(
+        {"messages": [
+            system_message(),
+            HumanMessage(content="What is the tallest building in the united states?"),
+        ]},
+        config=config,
+        stream_mode="values",
+    ):
+        chunk["messages"][-1].pretty_print()
