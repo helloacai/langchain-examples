@@ -226,7 +226,7 @@ def gcal_initiate_login():
 
     # Tell the user to go to the authorization URL.
     auth_url, _ = flow.authorization_url(prompt='consent')
-    return "please login: "+auth_url
+    return "please tell me the code you get after logging in to google: "+auth_url
 
 @tool
 def gcal_finalize_login(code: str):
