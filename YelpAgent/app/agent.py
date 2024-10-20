@@ -68,14 +68,15 @@ workflow.add_edge("tools", "agent")
 
 graph = workflow.compile()
 
-config = RunnableConfig(configurable= {"thread_id": "1"})
+if __name__ == '__main__':
+    config = RunnableConfig(configurable= {"thread_id": "1"})
 
-for chunk in graph.stream(
-    {"messages": [
-        ("system", "You are a restaurant reservation agent. When evaluating a user's request you will first get a list of all the restaurants you can reserve and their details. This list will show the restaurant id, name, categories, and description among other details. Based on their categories, description, and other details you will decide on a restaurant to reserve using your reserve_restaurant tool. When calling this tool you will provide the restaurant dict and the datetime for the reservation."),
-        ("human", "I want to make a reservation for a good indian restaurant in San Francisco at 7pm tomorrow PST")
-    ]},
-    config=config,
-    stream_mode="values",
-):
-    chunk["messages"][-1].pretty_print()
+    for chunk in graph.stream(
+        {"messages": [
+            ("system", "You are a restaurant reservation agent. When evaluating a user's request you will first get a list of all the restaurants you can reserve and their details. This list will show the restaurant id, name, categories, and description among other details. Based on their categories, description, and other details you will decide on a restaurant to reserve using your reserve_restaurant tool. When calling this tool you will provide the restaurant dict and the datetime for the reservation."),
+            ("human", "I want to make a reservation for a good indian restaurant in San Francisco at 7pm tomorrow PST")
+        ]},
+        config=config,
+        stream_mode="values",
+    ):
+        chunk["messages"][-1].pretty_print()
