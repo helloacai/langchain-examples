@@ -335,7 +335,7 @@ if __name__ == '__main__':
     config = RunnableConfig(configurable= {"thread_id": "1"})
     for chunk in graph.stream(
         {"messages": [
-            system_message(),
+            system_message("1"),
             HumanMessage(content="What is the tallest building in the united states?"),
         ]},
         config=config,
