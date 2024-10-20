@@ -229,11 +229,11 @@ def gcal_initiate_login():
     return "please tell me the code you get after logging in to google: "+auth_url
 
 @tool
-def gcal_finalize_login(code: str):
+def gcal_finalize_login(auth_code: str):
     """finalize oath login to google calendar"""
 
     # fetch the token using the code
-    flow.fetch_token(code=code)
+    flow.fetch_token(code=auth_code)
     return "logged in"
 
 @tool
