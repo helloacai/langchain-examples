@@ -15,6 +15,7 @@ app = FastAPI()
 class Request(BaseModel):
     requestRef: str
     threadUID: str
+    parentThreadUID: str
 
 
 @app.get("/")
