@@ -244,7 +244,9 @@ def call_agent(agent_uid: str, request: str, thread_id: str):
         args={"parentThreadUID": thread_id, "threadUID": "0x0000000000000000000000000000000000000000000000000000000000000000", "aciUID": agent_uid, "requestRef": request}
     )
 
-    invocation.wait()
+    out = invocation.wait()
+    print("INVOCATION WAIT RESPONSE:")
+    print(out)
 
     # HACK: no time to plumb these names properly.
     agent_name = "UnknownAgent"
