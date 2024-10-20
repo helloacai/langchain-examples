@@ -1,5 +1,5 @@
 import logging
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 from fastapi import FastAPI
 from agent import graph, system_message
@@ -29,16 +29,16 @@ async def post_thread(request: Request):
     async for chunk in graph.astream(inputs, config=config, stream_mode="values"):
         chunk_message = chunk["messages"][-1]
         logger.info(chunk_message)
-        if chunk_message["type"] == "ai" or chunk_message["type"] == "tool":
+        if isinstance(chunk_message, AIMessage) or isinstance(chunk_message, ToolMessage):
             logger.info("sending back ai or tool message")
             message = {}
-            if isinstance(chunk_message["content"], str):
-                message["content"] = chunk_message["content"]
+            if isinstance(chunk_message.content, str):
+                message["content"] = chunk_message.content
             else:
-                for content in chunk_message["content"]:
+                for content in chunk_message.content:
                     if content["type"] == "text":
                         message["content"] = content["text"]
-            if chunk_message["response_metadata"]["stop_reason"] == "end_turn":
+            if chunk_message.response_metadata and chunk_message.response_metadata["stop_reason"] == "end_turn":
                 message["status"] = "complete"
             else:
                 message["status"] = "info"
@@ -59,16 +59,16 @@ async def patch_thread(request: Request):
     async for chunk in graph.astream(None, config=config, stream_mode="values"):
         chunk_message = chunk["messages"][-1]
         logger.info(chunk_message)
-        if chunk_message["type"] == "ai" or chunk_message["type"] == "tool":
+        if isinstance(chunk_message, AIMessage) or isinstance(chunk_message, ToolMessage):
             logger.info("sending back ai or tool message")
             message = {}
-            if isinstance(chunk_message["content"], str):
-                message["content"] = chunk_message["content"]
+            if isinstance(chunk_message.content, str):
+                message["content"] = chunk_message.content
             else:
-                for content in chunk_message["content"]:
+                for content in chunk_message.content:
                     if content["type"] == "text":
                         message["content"] = content["text"]
-            if chunk_message["response_metadata"]["stop_reason"] == "end_turn":
+            if chunk_message.response_metadata and chunk_message.response_metadata["stop_reason"] == "end_turn":
                 message["status"] = "complete"
             else:
                 message["status"] = "info"
