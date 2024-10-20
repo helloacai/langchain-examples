@@ -33,11 +33,11 @@ async def post_thread(request: Request):
             logger.info("sending back ai or tool message")
             message = {}
             if isinstance(chunk_message.content, str):
-                message["content"] = chunk_message.content
+                message["message"] = chunk_message.content
             else:
                 for content in chunk_message.content:
                     if content["type"] == "text":
-                        message["content"] = content["text"]
+                        message["message"] = content["text"]
             if chunk_message.response_metadata and chunk_message.response_metadata["stop_reason"] == "end_turn":
                 message["status"] = "complete"
             else:
@@ -63,11 +63,11 @@ async def patch_thread(request: Request):
             logger.info("sending back ai or tool message")
             message = {}
             if isinstance(chunk_message.content, str):
-                message["content"] = chunk_message.content
+                message["message"] = chunk_message.content
             else:
                 for content in chunk_message.content:
                     if content["type"] == "text":
-                        message["content"] = content["text"]
+                        message["message"] = content["text"]
             if chunk_message.response_metadata and chunk_message.response_metadata["stop_reason"] == "end_turn":
                 message["status"] = "complete"
             else:
