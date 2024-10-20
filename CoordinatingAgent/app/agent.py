@@ -233,15 +233,15 @@ abi = [
 ]
 
 @tool
-def call_agent(agent: str, request: str, thread_id: str):
+def call_agent(agent_uid: str, request: str, thread_id: str):
     """Call the specific agent with a request""" # Right now just spoofing this. Once Agent wallet is created this will be a contract call via CDP
 
-    print("CALL_AGENT: "+agent+" | REQUEST: "+request+" | THREAD_ID:"+thread_id)
+    print("CALL_AGENT: "+agent_uid+" | REQUEST: "+request+" | THREAD_ID:"+thread_id)
     invocation = wallet.invoke_contract(
         contract_address="0x5AFc57F7F6D6Dd560A87Ab073ebd09C8e4f4544a",
         abi=abi,
         method="request",
-        args={"parentThreadUID": thread_id, "threadUID": "0x0000000000000000000000000000000000000000000000000000000000000000", "aciUID": agent, "requestRef": request}
+        args={"parentThreadUID": thread_id, "threadUID": "0x0000000000000000000000000000000000000000000000000000000000000000", "aciUID": agent_uid, "requestRef": request}
     )
 
     invocation.wait()
@@ -305,7 +305,7 @@ graph = workflow.compile(checkpointer=memory,
                          interrupt_after=["tools"])
 
 def system_message(thread_id: str):
-    return SystemMessage(content="You are a coordinating agent. The current datetime is "+datetime.now().isoformat()+" and your time zone is PST. When evaluating a user's request you will first get a list of all the agents you can call on and their capabilities using the get_all_agents getter. This list will show the agent name, short description, and their unique identifier. Based on their short description you will decide on 1-3 helper agents to call on using your call_agent tool. When calling this tool you will provide the Agent's corresponding identifier and the request that you would like the agent to complete. Your thread_id is "+thread_id+".")
+    return SystemMessage(content="You are a coordinating agent. The current datetime is "+datetime.now().isoformat()+" and your time zone is PST. When evaluating a user's request you will first get a list of all the agents you can call on and their capabilities using the get_all_agents tool. This list will show the agent name, short description, and their uid. Based on their short description you will decide on 1-3 helper agents to call on using your call_agent tool. When calling this tool you will provide the Agent's corresponding identifier and the request that you would like the agent to complete. Your thread_id is "+thread_id+".")
 
 if __name__ == '__main__':
     config = RunnableConfig(configurable= {"thread_id": "1"})
