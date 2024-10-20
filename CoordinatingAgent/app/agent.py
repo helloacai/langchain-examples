@@ -20,6 +20,8 @@ from gql.transport.aiohttp import AIOHTTPTransport
 
 from cdpHandler import getWallet
 
+import requests
+
 memory = MemorySaver()
 
 
@@ -235,18 +237,29 @@ abi = [
 @tool
 def call_agent(agent_uid: str, request: str, thread_id: str):
     """Call the specific agent with a request""" # Right now just spoofing this. Once Agent wallet is created this will be a contract call via CDP
-
     print("CALL_AGENT: "+agent_uid+" | REQUEST: "+request+" | THREAD_ID:"+thread_id)
+
+    subthread_uid = "0x0000000000000000000000000000000000000000000000000000000000000000"
+    resp = requests.get(url="https://spindle.onrender.com/subthread/"+thread_id+"/"+agent_uid)
+    if resp.status_code == 200:
+        print("SUBTHREAD RESPONSE:")
+        j = resp.json()
+        print(j)
+        subthread_uid = j["uid"]
+    else:
+        print("NO SUBTHREAD FOUND")
+
+    print("INVOKING CONTRACT")
     invocation = wallet.invoke_contract(
         contract_address="0x5AFc57F7F6D6Dd560A87Ab073ebd09C8e4f4544a",
         abi=abi,
         method="request",
-        args={"parentThreadUID": thread_id, "threadUID": "0x0000000000000000000000000000000000000000000000000000000000000000", "aciUID": agent_uid, "requestRef": request}
+        args={"parentThreadUID": thread_id, "threadUID": subthread_uid, "aciUID": agent_uid, "requestRef": request}
     )
 
-    out = invocation.wait()
-    print("INVOCATION WAIT RESPONSE:")
-    print(out)
+    print("WAITING ON CONTRACT")
+    invocation.wait()
+    print("INVOCATION COMPLETE")
 
     # HACK: no time to plumb these names properly.
     agent_name = "UnknownAgent"
