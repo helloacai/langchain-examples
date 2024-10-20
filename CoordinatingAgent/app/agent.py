@@ -246,7 +246,16 @@ def call_agent(agent_uid: str, request: str, thread_id: str):
 
     invocation.wait()
 
-    return "agent called"
+    # HACK: no time to plumb these names properly.
+    agent_name = "UnknownAgent"
+    if agent_uid == "0xa3f374f49528ef97f2c6adad7931e87373782d5e9b965de2e61554828275a033":
+        agent_name = "Yelp Agent"
+    if agent_uid == "0xaf3a33c2f95a9e41e54c386aad4d260b2f3fe73a73353d3c439871bbf2301e41":
+        agent_name = "Google Calendar Agent"
+    if agent_uid == "0xeaac656a5054ef4a92f34da8870b97a7a3037f20181ad169956b4a631903d466":
+        agent_name = "Search Agent"
+
+    return agent_name+" called"
 
 
 @tool
