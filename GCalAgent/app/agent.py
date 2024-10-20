@@ -1,4 +1,4 @@
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage,SystemMessage
 from langchain_core.tools import tool
 from langchain_core.runnables.config import RunnableConfig
 from langgraph.prebuilt import ToolNode
@@ -123,13 +123,16 @@ workflow.add_edge("tools", "agent")
 graph = workflow.compile(checkpointer=memory,
                          interrupt_after=["initializers"])
 
+def system_message():
+    return SystemMessage(content="You are a google calendar event creation agent. The current datetime is "+datetime.now().isoformat()+". When evaluating a user's request you will first need to log in to google with the gcal_initiate_login initializer. After calling this initializer you will need to ask the user to log in using the url provided by the tool. Once the user has logged in and responds with the code, you can use the gcal_finalize_login tool with the code to complete the login process. After that, use the create_event tool to create the requested event. When calling this tool you will provide the event's title, description, and datetime.")
+
 if __name__ == '__main__':
     config = RunnableConfig(configurable= {"thread_id": "1"})
     tool_call_id = "UNKNOWN"
     for chunk in graph.stream(
         {"messages": [
-            ("system", "You are a google calendar event creation agent. The current datetime is "+datetime.now().isoformat()+". When evaluating a user's request you will first need to log in to google with the gcal_initiate_login initializer. After calling this initializer you will need to ask the user to log in using the url provided by the tool. Once the user has logged in and responds with the code, you can use the gcal_finalize_login tool with the code to complete the login process. After that, use the create_event tool to create the requested event. When calling this tool you will provide the event's title, description, and datetime."),
-            ("human", "Please create an event for my Amber Restarant dinner reservation at 7pm tomorrow PST")
+            system_message(),
+            HumanMessage(content="Please create an event for my Amber Restarant dinner reservation at 7pm tomorrow PST"),
         ]},
         config=config,
         stream_mode="values",
