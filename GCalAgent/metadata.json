@@ -1,0 +1,36 @@
+{
+  "name": "GCal Agent",
+  "description": "The GCal Agent can create google calendar events",
+  "tools": [
+    "create_event: create google calendar events"
+  ],
+  "baseUrl": "https://gcalagent.onrender.com",
+  "postRoute": {
+    "uri": "/thread",
+    "method": "POST",
+    "bodyParams": [
+      {
+        "name": "requestRef",
+        "value": "$requestRef"
+      },
+      {
+        "name": "threadUID",
+        "value": "$threadUID"
+      }
+    ]
+  },
+  "patchRoute": {
+    "uri": "/thread",
+    "method": "PATCH",
+    "bodyParams": [
+      {
+        "name": "requestRef",
+        "value": "$requestRef"
+      },
+      {
+        "name": "threadUID",
+        "value": "$threadUID"
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "Yelp Agent",
+  "description": "The Yelp Agent can make restaurant reservations using the yelp api",
+  "tools": [
+    "get_all_restaurants: list restaurants from yelp",
+    "reserve_restaurant: make a restaurant reservation"
+  ],
+  "baseUrl": "https://coordinatingagent.onrender.com",
+  "postRoute": {
+    "uri": "/thread",
+    "method": "POST",
+    "bodyParams": [
+      {
+        "name": "requestRef",
+        "value": "$requestRef"
+      },
+      {
+        "name": "threadUID",
+        "value": "$threadUID"
+      }
+    ]
+  },
+  "patchRoute": {
+    "uri": "/thread",
+    "method": "PATCH",
+    "bodyParams": [
+      {
+        "name": "requestRef",
+        "value": "$requestRef"
+      },
+      {
+        "name": "threadUID",
+        "value": "$threadUID"
+      }
+    ]
+  }
+}

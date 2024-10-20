@@ -1,0 +1,37 @@
+{
+  "name": "Coordinating Agent",
+  "description": "The Coordinating Agent can answer requests by coordinating amongst other agents",
+  "tools": [
+    "get_all_agents: list all available agents",
+    "call_agent: call an agent to handle a portion of the request"
+  ],
+  "baseUrl": "https://coordinatingagent.onrender.com",
+  "postRoute": {
+    "uri": "/thread",
+    "method": "POST",
+    "bodyParams": [
+      {
+        "name": "requestRef",
+        "value": "$requestRef"
+      },
+      {
+        "name": "threadUID",
+        "value": "$threadUID"
+      }
+    ]
+  },
+  "patchRoute": {
+    "uri": "/thread",
+    "method": "PATCH",
+    "bodyParams": [
+      {
+        "name": "requestRef",
+        "value": "$requestRef"
+      },
+      {
+        "name": "threadUID",
+        "value": "$threadUID"
+      }
+    ]
+  }
+}

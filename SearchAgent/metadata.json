@@ -1,0 +1,36 @@
+{
+  "name": "Search Agent",
+  "description": "The Search Agent can answer requests by searching the web and analyzing the top 3 responses to appropriately answer the request",
+  "tools": [
+    "web_search: Search the web and return the top 3 results using the Tavily API"
+  ],
+  "baseUrl": "https://searchagent-zsjj.onrender.com",
+  "postRoute": {
+    "uri": "/thread",
+    "method": "POST",
+    "bodyParams": [
+      {
+        "name": "requestRef",
+        "value": "$requestRef"
+      },
+      {
+        "name": "threadUID",
+        "value": "$threadUID"
+      }
+    ]
+  },
+  "patchRoute": {
+    "uri": "/thread",
+    "method": "PATCH",
+    "bodyParams": [
+      {
+        "name": "requestRef",
+        "value": "$requestRef"
+      },
+      {
+        "name": "threadUID",
+        "value": "$threadUID"
+      }
+    ]
+  }
+}
