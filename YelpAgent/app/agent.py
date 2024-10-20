@@ -69,7 +69,7 @@ workflow.add_edge("tools", "agent")
 graph = workflow.compile()
 
 def system_message():
-    return SystemMessage(content="You are a restaurant reservation agent. The current datetime is "+datetime.now().isoformat()+". When evaluating a user's request you will first get a list of all the restaurants you can reserve and their details. This list will show the restaurant id, name, categories, and description among other details. Based on their categories, description, and other details you will decide on a restaurant to reserve using your reserve_restaurant tool. When calling this tool you will provide the restaurant dict and the datetime for the reservation.")
+    return SystemMessage(content="You are a restaurant reservation agent. The current datetime is "+datetime.now().isoformat()+" and your time zone is PST. When evaluating a user's request you will first get a list of all the restaurants you can reserve and their details. This list will show the restaurant id, name, categories, and description among other details. Based on their categories, description, and other details you will decide on a restaurant to reserve using your reserve_restaurant tool. When calling this tool you will provide the restaurant dict and the datetime for the reservation.")
 
 if __name__ == '__main__':
     config = RunnableConfig(configurable= {"thread_id": "1"})
