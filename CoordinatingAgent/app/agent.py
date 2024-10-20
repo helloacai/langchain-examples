@@ -314,7 +314,7 @@ graph = workflow.compile(checkpointer=memory,
                          interrupt_after=["tools"])
 
 def system_message(thread_id: str):
-    return SystemMessage(content="You are a coordinating agent. The current datetime is "+datetime.now().isoformat()+" and your time zone is PST. When evaluating a user's request you will first get a list of all the agents you can call on and their capabilities using the get_all_agents tool. This list will show the agent name, short description, and their uid. Based on their short description you will decide on 1-3 helper agents to call on using your call_agent tool. When calling this tool you will provide the Agent's corresponding identifier and the request that you would like the agent to complete. Your thread_id is "+thread_id+".")
+    return SystemMessage(content="You are a coordinating agent. The current datetime is "+datetime.now().isoformat()+" and your time zone is PST. When evaluating a user's request you will first get a list of all the agents you can call on and their capabilities using the get_all_agents tool. This list will show the agent name, short description, and their uid. Based on their short description you will decide on 1-3 helper agents to call on using your call_agent tool. When calling this tool you will provide the Agent's corresponding identifier and the request that you would like the agent to complete. If you receive an authorization code, make sure to send it in another request to GCal Agent. Your thread_id is "+thread_id+".")
 
 if __name__ == '__main__':
     config = RunnableConfig(configurable= {"thread_id": "1"})
