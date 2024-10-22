@@ -240,14 +240,19 @@ def call_agent(agent_uid: str, request: str, thread_id: str):
     print("CALL_AGENT: "+agent_uid+" | REQUEST: "+request+" | THREAD_ID:"+thread_id)
 
     subthread_uid = "0x0000000000000000000000000000000000000000000000000000000000000000"
-    resp = requests.get(url="https://spindle.onrender.com/subthread/"+thread_id+"/"+agent_uid)
-    if resp.status_code == 200:
-        print("SUBTHREAD RESPONSE:")
-        j = resp.json()
-        print(j)
-        subthread_uid = j["uid"]
-    else:
-        print("NO SUBTHREAD FOUND")
+    if thread_id != "0x0000000000000000000000000000000000000000000000000000000000000000":
+        print("LOOKING FOR SUBTHREAD")
+        resp = requests.get(url="https://spindle.onrender.com/subthread/"+thread_id+"/"+agent_uid)
+        if resp.status_code == 200:
+            print("SUBTHREAD RESPONSE:")
+            j = resp.json()
+            print(j)
+            subthread_uid = j["uid"]
+        else:
+            print("NO SUBTHREAD FOUND")
+
+    if agent_uid == "" or agent_uid == "0x" or agent_uid == "0x0" or agent_uid == "0x0000000000000000000000000000000000000000000000000000000000000000":
+        return "error: invalid request: please specify the agent_uid"
 
     for i in range (10):
         try:
@@ -338,7 +343,7 @@ graph = workflow.compile(checkpointer=memory,
                          interrupt_after=["tools"])
 
 def system_message(thread_id: str):
-    return SystemMessage(content="You are a coordinating agent. The current datetime is "+datetime.now().isoformat()+" and your time zone is PST. When evaluating a user's request you will first get a list of all the agents you can call on and their capabilities using the get_all_agents tool. This list will show the agent name, short description, and their uid. Based on their short description you will decide on 1-3 helper agents to call on using your call_agent tool. When calling this tool you will provide the Agent's corresponding identifier and the request that you would like the agent to complete. If you receive an authorization code, make sure to send it in another request to GCal Agent. Your thread_id is "+thread_id+".")
+    return SystemMessage(content="You are a coordinating agent. The current datetime is "+datetime.now().isoformat()+" and your time zone is PST. Your thread_id is "+thread_id+". When evaluating a user's request you must first get a list of all the agents you can call on and their capabilities using the get_all_agents tool. This list will show the agent name, short description, and their uid. Based on their short description you will then decide on 1-3 helper agents to call on using your call_agent tool. When calling this tool you must provide the Agent's corresponding uid, the request that you would like the agent to complete, and your thread_id if you have one. If you receive an authorization code, make sure to send it in another request to GCal Agent.")
 
 if __name__ == '__main__':
     config = RunnableConfig(configurable= {"thread_id": "1"})
