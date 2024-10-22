@@ -249,17 +249,26 @@ def call_agent(agent_uid: str, request: str, thread_id: str):
     else:
         print("NO SUBTHREAD FOUND")
 
-    print("INVOKING CONTRACT")
-    invocation = wallet.invoke_contract(
-        contract_address="0x5AFc57F7F6D6Dd560A87Ab073ebd09C8e4f4544a",
-        abi=abi,
-        method="request",
-        args={"parentThreadUID": thread_id, "threadUID": subthread_uid, "aciUID": agent_uid, "requestRef": request}
-    )
+    for i in range (10):
+        try:
+            print("["+str(i)+"] INVOKING CONTRACT")
+            invocation = wallet.invoke_contract(
+                contract_address="0x5AFc57F7F6D6Dd560A87Ab073ebd09C8e4f4544a",
+                abi=abi,
+                method="request",
+                args={"parentThreadUID": thread_id, "threadUID": subthread_uid, "aciUID": agent_uid, "requestRef": request}
+            )
 
-    print("WAITING ON CONTRACT")
-    invocation.wait()
-    print("INVOCATION COMPLETE")
+            print("["+str(i)+"] WAITING ON CONTRACT")
+            invocation.wait()
+        except Exception as e:
+            print("["+str(i)+"] GOT ERROR:")
+            print(e)
+        else:
+            print("["+str(i)+"] INVOCATION COMPLETE")
+            break
+    else:
+        raise RuntimeError("call_agent failed")
 
     # HACK: no time to plumb these names properly.
     agent_name = "UnknownAgent"
